@@ -1,0 +1,32 @@
+.grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 10px;
+    background-color: #2196F3;
+    padding: 10px;
+}
+
+#arrUrg12 {
+    grid-row-start: 1;
+    grid-row-end: 3;
+}
+
+.led {
+    display: inline-block;
+    width : 25px;
+    height : 25px;
+    background: green;
+    border-radius: 100%;
+}
+
+#arrUrg1 {
+  grid-column: 1 / span 2;
+}
+
+#defCrit1 {
+  grid-column: 1 / span 2;
+}
+
+#etatProc1 {
+  grid-column: 1 / span 2;
+}
