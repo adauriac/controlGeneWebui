@@ -1,15 +1,46 @@
-.grid-container {
+/* .grid-container { */
+#divin {
+    width: 200px; /* largeur de 200 pixels */
+    height: 400px; /* hauteur de 150 pixels */
+
     display: grid;
     grid-template-columns: auto auto auto;
     gap: 10px;
-    background-color: #2196F3;
+    background-color: #F0F0F0;
+    //background-color: #2196F3;
     padding: 10px;
 }
 
-#arrUrg12 {
-    grid-row-start: 1;
-    grid-row-end: 3;
+#values {
+    width: 400px; /* largeur de 200 pixels */
+    height: 250px; /* hauteur de 150 pixels */
+
+    background-color: #F0FEF0;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    padding: 10px;
 }
+/*
+.limites {
+    width: 200px;
+    height: 400px;
+    position: absolute;
+    top: 20;
+    left: 400;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 10px;
+    background-color: #F0F000;
+    //background-color: #2196F3;
+    padding: 10px;
+}
+*/
+/*
+#arrUrg1, #defCrit1,#etatProc1 {
+    grid-col-start: 1;
+    grid-col-end: 3;
+}
+*/
 
 .led {
     display: inline-block;
@@ -19,14 +50,26 @@
     border-radius: 100%;
 }
 
-#arrUrg1 {
-  grid-column: 1 / span 2;
+.cellule {
+    display: flex; /* Utilisation de flexbox pour centrer le contenu */
+    /*align-items: center; /* Centrer verticalement */
 }
 
-#defCrit1 {
-  grid-column: 1 / span 2;
+
+#gene3 {
+    display: flex;
+    width : 25px;
+    height : 25px;
+    background: green;
+    border-radius: 100%;
+    align-items: center; /* Centrer verticalement */
 }
 
-#etatProc1 {
-  grid-column: 1 / span 2;
+.doubleBorder {
+    border: solid; /* double;*/
 }
+ 
+.singleBorder {
+    border: solid;
+}
+ 
