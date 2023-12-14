@@ -1,4 +1,3 @@
-/* .grid-container { */
 #divin {
     width: 200px; /* largeur de 200 pixels */
     height: 400px; /* hauteur de 150 pixels */
@@ -20,27 +19,6 @@
     grid-template-columns: auto auto auto;
     padding: 10px;
 }
-/*
-.limites {
-    width: 200px;
-    height: 400px;
-    position: absolute;
-    top: 20;
-    left: 400;
-    display: grid;
-    grid-template-columns: auto auto auto;
-    gap: 10px;
-    background-color: #F0F000;
-    //background-color: #2196F3;
-    padding: 10px;
-}
-*/
-/*
-#arrUrg1, #defCrit1,#etatProc1 {
-    grid-col-start: 1;
-    grid-col-end: 3;
-}
-*/
 
 .led {
     display: inline-block;
@@ -56,15 +34,6 @@
 }
 
 
-#gene3 {
-    display: flex;
-    width : 25px;
-    height : 25px;
-    background: green;
-    border-radius: 100%;
-    align-items: center; /* Centrer verticalement */
-}
-
 .doubleBorder {
     border: solid; /* double;*/
 }
@@ -72,4 +41,3 @@
 .singleBorder {
     border: solid;
 }
- 
