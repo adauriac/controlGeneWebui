@@ -3,7 +3,9 @@
   <meta charset="utf-8"/>
   <link rel="stylesheet" href="controlGeneWebui.css" />
   <body>
-
+    <script src="/webui.js"></script>
+    <script src="/controlGeneWebui.js"></script>
+    
     <div id="divin">	
       <div id="gene1" class="cellule">Générateur</div>
       <button id="gene2" class="led"> </button>
@@ -36,11 +38,11 @@
       <div> Mesures </div>
 
       <div> Puissance (W)</div>
-      <div id="powerSetPoint" class="doubleBorder">  ?powSetPt </div>
+      <div><input id="powerSetPoint" ></input></div>
       <div id="powerMeasure" class="singleBorder"> ?powMeas </div>
 
       <div> Debit (l/mn) </div>
-      <div id="flowSetPoint" class="doubleBorder">  ??? </div>
+      <div><input id="flowSetPoint"></input></div>
       <div id="flowMeasure" class="singleBorder"> ??? </div>
 
       <div> Courant Pont (mA) </div>
@@ -56,15 +58,14 @@
       <div> Haute </div>
 
       <div> Puissance (W)</div>
-      <div id="powerLowLimit" class="doubleBorder">  ??? </div>
-      <div id="powerHighLimit" class="doubleBorder"> ??? </div>
+      <div><input type="text" id="powerLowLimit"></input></div>
+      <div><input type="text" id="powerHighLimit" ></input></div>
       
       <div> Debit (l/mn) </div>
-      <div id="flowLowLimit" class="doubleBorder">  ??? </div>
-      <div id="flosHighLimit" class="doubleBorder"> ??? </div>
+      <div><input type="text" id="flowLowLimit" ></input></div>
+      <div><input type="text" id="flowHighLimit" ></input></div>
       
     </div>
-    
-    <script src="controlGeneWebui.js"></script>
+    <button id="go"  > go </button> <!-- sera traite par le script python --> 
   </body>
 </html>
