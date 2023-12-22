@@ -1,4 +1,22 @@
 <!DOCTYPE html>
+<!--
+Arret d'urgence        0x65 Led
+Defaut critique        0x66 Led
+Etat du procede        0x67 Led
+Debit mesure           0x68 Label
+Puissance mesure       0x6B Label
+Tension mesure         0x72 Label
+Courant mesure         0x7F Label
+Limite puissance basse 0x96 Input
+Limite puissance haute 0x97 Input
+Limire debit bas       0xA0 Input
+Limire debit haut      0xA1 Input
+Consigne puissance     0xB2 Input
+Consigne debit         0xB3 Input
+Generateur             0xBB Bouton
+Gaz                    0xBC Bouton
+Plasma                 0xBD Bouton
+  -->
 <html>
   <meta charset="utf-8"/>
   <link rel="stylesheet" href="controlGeneWebui.css" />
@@ -6,66 +24,73 @@
     <script src="/webui.js"></script>
     <script src="/controlGeneWebui.js"></script>
     
-    <div id="divin">	
+    <div id="divBoutonLed">	
       <div id="gene1" class="cellule">Générateur</div>
-      <button id="gene2" class="led"> </button>
-      <div id="gene3" class="cellule led"> </div>
-      
+      <button id="gene2" class="boutonLed"> </button>
+
       <div id="gaz1" class="cellule">Gaz</div> 
-      <button id="gaz2" class="led"></button>
-      <div id="gaz3" class="led"></div>
+      <button id="gaz2" class="boutonLed"></button>
       
       <div id="plasma1" class="cellule">Plasma</div>
-      <button id="plasma2" class="led"></button> 
-      <div id="plasma3" class="led"></div>
+      <button id="plasma2" class="boutonLed"></button> 
       
       <div id="arrUrg1" class="cellule">Arrêt d'urgence</div> 
-      <div></div>
       <div id="arrUrg2" class="led"></div>
       
       <div id="defCrit1" class="cellule">Défaut critique</div>
-      <div></div>
       <div id="defCrit2" class="led"></div>
       
       <div id="etatProc1" class="cellule">État procédé</div> 
-      <div></div>
       <div id="etatProc2" class="led"></div> 
     </div>
 
-    <div id="values">
-      <div>  </div>
-      <div> Consignes </div>
-      <div> Mesures </div>
+    <div id="divConsignes">
+      <div></div>
+      <div class="labelOutput">Valeur actuelle</div>
+      <div class="labelOutput">Nouvelle valeur</div>
 
-      <div> Puissance (W)</div>
-      <div><input id="powerSetPoint" ></input></div>
-      <div id="powerMeasure" class="singleBorder"> ?powMeas </div>
+      <div > Puissance (W)</div>
+      <div id="consignePuissance" class="labelOutput"> 012 </div> 
+      <input id="consignePuissanceNew" class="inputCell"></input>
 
       <div> Debit (l/mn) </div>
-      <div><input id="flowSetPoint"></input></div>
-      <div id="flowMeasure" class="singleBorder"> ??? </div>
-
-      <div> Courant Pont (mA) </div>
-      <div> </div>
-      <div id="currentBridge" class="singleBorder"> ??? </div>
-
-      <div > Tension PFC (V) </div>
-      <div> </div>
-      <div id="tensionPFC" class="singleBorder"> ??? </div>
-
-      <div> Limites  </div>
-      <div> Basse </div>
-      <div> Haute </div>
-
-      <div> Puissance (W)</div>
-      <div><input type="text" id="powerLowLimit"></input></div>
-      <div><input type="text" id="powerHighLimit" ></input></div>
+      <div id="consigneDebit" class="labelOutput"> 12.3 </div>
+      <input id="consigneDebitNew"  class="inputCell"></input>
       
-      <div> Debit (l/mn) </div>
-      <div><input type="text" id="flowLowLimit" ></input></div>
-      <div><input type="text" id="flowHighLimit" ></input></div>
+      <div> Limite basse puissance (W) </div>
+      <div  id="limitPuissanceBasse" class="labelOutput"> 234 </div>
+      <input id="limitPuissanceBasseNew" class="inputCell" ></input>
       
+      <div> Limite haute puissance (W) </div>
+      <div id="limitPuissancehaute" class="labelOutput"> 345 </div>
+      <input id="limitPuissancehauteNew" class="inputCell"  ></input>
+      
+      <div> Debit bas (l/mn) </div>
+      <div id="debitBas" class="labelOutput"> 456 </div>
+      <input id="debitBasNew" class="inputCell"></input>
+      
+      <div> Debit haut (l/mn) </div>
+      <div class="debitHaut"> 567 </div>
+      <input id="debitHautNew" class="inputCell"></input>
     </div>
-    <button id="go" > go </button> <!-- sera traite par le script python --> 
+
+    <div id="divValues">
+      <div> Puissance (W)</div>
+      <div class="labelOutput"> 121 </div>
+
+      <div> Debit (l/mn) </div>
+      <div class="labelOutput"> 178  </div>
+
+      <div> Courant pont (mA) </div>
+      <div class="labelOutput"> 15  </div>
+
+      <div> Tension PFC(V) </div>
+      <div class="labelOutput"> 72  </div>
+    </div>
+
+    
+    <div> <button id="goBtn" > go </button> </div>
+    <div id="temoin"></div>
+
   </body>
 </html>

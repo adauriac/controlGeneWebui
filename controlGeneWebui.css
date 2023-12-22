@@ -1,23 +1,57 @@
-#divin {
+body {
+  width: 800px; /* Largeur de la fenêtre principale */
+  height: 1000px; /* Hauteur de la fenêtre principale */
+  resize: none;
+  /* Autres styles */
+}
+
+#divBoutonLed {
     width: 200px; /* largeur de 200 pixels */
     height: 400px; /* hauteur de 150 pixels */
+    position: absolute;
 
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto ;
     gap: 10px;
     background-color: #F0F0F0;
     //background-color: #2196F3;
     padding: 10px;
 }
 
-#values {
-    width: 400px; /* largeur de 200 pixels */
-    height: 250px; /* hauteur de 150 pixels */
+#divValues {
+    width: 250px; /* largeur de 200 pixels */
+    height: 150px; /* hauteur de 150 pixels */
+    position: absolute;
 
     background-color: #F0FEF0;
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto;/* nom valeurActuelle  */
     padding: 10px;
+}
+
+#divConsignes {
+    width: 420px; /* largeur de 200 pixels */
+    height: 210px; /* hauteur de 150 pixels */
+    position: absolute;
+
+    background-color: #FEF0F0;
+    display: grid;
+    grid-template-columns: auto auto auto; /* nom valeurActuelle valeurAMettre */
+    padding: 10px;
+}
+
+.labelOutput {
+    text-align: center;
+}
+
+.inputCell {
+    width: 60px;
+    height: 15px;
+    align: center;
+}
+
+#goBtn {
+    position: absolute;
 }
 
 .led {
@@ -28,16 +62,25 @@
     border-radius: 100%;
 }
 
+.boutonLed {
+    display: inline-block;
+    width : 25px;
+    height : 25px;
+    background: green;
+    border-radius: 100%;
+}
+
+#temoin {
+    display: inline-block;
+    width : 15px;
+    height : 15px;
+    background: #1234AB;
+    border-radius: 100%;
+    position: absolute;
+}
+
 .cellule {
     display: flex; /* Utilisation de flexbox pour centrer le contenu */
     /*align-items: center; /* Centrer verticalement */
 }
 
-
-.doubleBorder {
-    border: solid; /* double;*/
-}
- 
-.singleBorder {
-    border: solid;
-}

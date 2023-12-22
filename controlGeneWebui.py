@@ -147,3 +147,4 @@ MyWindow.show("controlGeneWebui.html",webui.browser.firefox)
 MyWindow.bind("my_function2", my_function2) # Geoffroy a prpose ca
 MyWindow.bind("go", my_function)
 webui.wait()
+# wrssdnuw_di
