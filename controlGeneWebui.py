@@ -12,16 +12,16 @@ def getRegisters():
     ans = ""
     for i in range(len(ou)):
         v = instrument.read_registers(ou[i],1)
-        vals[i] = v
+        vals[i] = v[0]
         ans += "%2d Ox%x %3d %26s %d\n"%(i,ou[i],ou[i],quoi[i],v[0])
     return ans
 
 def my_function2(e : webui.event):
     print(f"entering my_function2 {e.window.get_str(e, 0)}")
-    k = index["Puissance limite basse"]
-    x = vals[k][0]
-    print(k,x)
-    return "%d"%x
+    ans = ""
+    for k in range(len(ou)):
+        ans += "%d %d "%(ou[k],vals[k])
+    return ans[:-1]; # suppression du ' ' final
 
 def my_function(e:webui.event):
     global quoi,index
@@ -40,18 +40,6 @@ quoi = []
 ou = []
 index= dict()
 
-quoi.append("Generateur");
-ou.append(0xBB);
-index["Generateur"] = len(ou)-1;
-
-quoi.append("Gaz");
-ou.append(0xBC);
-index["Gaz"] = len(ou)-1; 
-
-quoi.append("Plasma");
-ou.append(0xBD);
-index["Plasma"] = len(ou)-1;
-
 quoi.append("Arret d'urgence");
 ou.append(0x65);
 index["Arret d'urgence"] = len(ou)-1;
@@ -60,33 +48,25 @@ quoi.append("Defaut critique");
 ou.append(0x66);
 index["Defaut critique"] = len(ou)-1;
 
-quoi.append("Etat du procede");
-ou.append(0x6E);
-index["Etat du procede"] = len(ou)-1;
-
-quoi.append("Consigne puissance");
-ou.append(0xB2);
-index["Consigne puissance"] = len(ou)-1;
-
-quoi.append("Consigne debit");
-ou.append(0xB3);
-index["Consigne debit"] = len(ou)-1;
+quoi.append("Mesure debit");
+ou.append(0x68);
+index["Mesure debit"] = len(ou)-1;
 
 quoi.append("Mesure puissance");
 ou.append(0x6B);
 index["Mesure puissance"] = len(ou)-1;
 
-quoi.append("Mesure debit");
-ou.append(0x68);
-index["Mesure debit"] = len(ou)-1;
-
-quoi.append("Courant pont");
-ou.append(0x7F);
-index["Courant pont"] = len(ou)-1;
+quoi.append("Etat du procede");
+ou.append(0x6E);
+index["Etat du procede"] = len(ou)-1;
 
 quoi.append("Tension PFC ");
 ou.append(0x72);
 index["Tension PFC "] = len(ou)-1;
+
+quoi.append("Courant pont");
+ou.append(0x7F);
+index["Courant pont"] = len(ou)-1;
 
 quoi.append("Puissance limite basse");
 ou.append(0x96);
@@ -103,6 +83,26 @@ index["Debit bas"] = len(ou)-1;
 quoi.append("Debit haut");
 ou.append(0xA1);
 index["Debit haut"] = len(ou)-1;
+
+quoi.append("Consigne puissance");
+ou.append(0xB2);
+index["Consigne puissance"] = len(ou)-1;
+
+quoi.append("Consigne debit");
+ou.append(0xB3);
+index["Consigne debit"] = len(ou)-1;
+
+quoi.append("Generateur");
+ou.append(0xBB);
+index["Generateur"] = len(ou)-1;
+
+quoi.append("Gaz");
+ou.append(0xBC);
+index["Gaz"] = len(ou)-1; 
+
+quoi.append("Plasma");
+ou.append(0xBD);
+index["Plasma"] = len(ou)-1;
 
 vals = list(map(lambda x:-1,quoi))
 ports = list(port_list.comports())

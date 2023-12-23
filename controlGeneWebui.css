@@ -1,6 +1,6 @@
 body {
-  width: 800px; /* Largeur de la fenêtre principale */
-  height: 1000px; /* Hauteur de la fenêtre principale */
+  width: 1000px; /* Largeur de la fenêtre principale */
+  height: 800px; /* Hauteur de la fenêtre principale */
   resize: none;
   /* Autres styles */
 }
@@ -30,7 +30,7 @@ body {
 }
 
 #divConsignes {
-    width: 420px; /* largeur de 200 pixels */
+    width: 450px; /* largeur de 200 pixels */
     height: 210px; /* hauteur de 150 pixels */
     position: absolute;
 
