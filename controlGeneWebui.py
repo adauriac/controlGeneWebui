@@ -112,7 +112,7 @@ for p in ports:
     ser = serial.Serial(port)
     print("using "+ser.name)
     instrument = minimalmodbus.Instrument(ser, 3)
-    # ser.open()
+    break
 
 instrument.serial.baudrate = 9600
 instrument.serial.parity = minimalmodbus.serial.PARITY_NONE
