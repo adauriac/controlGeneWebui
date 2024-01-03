@@ -26,9 +26,14 @@ def my_function(e:webui.event):
     return ans
 
 myGene = geneControler()
-myGene.connect()
+connected = myGene.connect()
+
 MyWindow = webui.window()
-MyWindow.show("controlGeneWebui.html",webui.browser.firefox)
+if connected==True:
+    MyWindow.show("controlGeneWebui.html",webui.browser.firefox)
+else:
+    MyWindow.show("controlGeneWebuiError.html",webui.browser.firefox)
+    exit(1)
 
 # MyWindow.bind("powerLowLimit", my_function)
 # MyWindow.bind("powerHighLimit", my_function)
