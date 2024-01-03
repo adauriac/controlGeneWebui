@@ -3,7 +3,26 @@
   <meta charset="utf-8"/>
   <body>
     <script src="/webui.js"></script>
-
-    y a une erreur
+    <div id="monDiv">     y a une erreur </div>
   </body>
+  <script>
+    function prout () {
+	console.log("hi from error");
+	let elt = document.getElementById("monDiv");
+	console.log(elt.innerHTML);
+	elt.innerHTML += " que je voudrais changer pour : 'response'";	   
+	webui.call('getError',"").then((response)=> {
+	    /*  PROCCESSING THE RETURN OF THE PYTHON FUNCTION */
+	    console.log(response)
+	    elt.innerHTML = response;	   
+	}).catch(
+	    (e) => {
+		console.error("prout", e);
+		elt.innerHTML += "mais on a eu une exception" ;
+	    }
+	)	
+    }
+    
+    document.addEventListener("DOMContentLoaded",()=> setTimeout(prout,1000))
+  </script>
 </html>
