@@ -3,26 +3,32 @@
   <meta charset="utf-8"/>
   <body>
     <script src="/webui.js"></script>
-    <div id="monDiv">     y a une erreur </div>
+    <div id="monDiv">  There is an error, wait ... </div>
   </body>
   <script>
-    function prout () {
+    
+    function getErrorJS () {
 	console.log("hi from error");
 	let elt = document.getElementById("monDiv");
-	console.log(elt.innerHTML);
-	elt.innerHTML += " que je voudrais changer pour : 'response'";	   
+	elt.innerHTML += " que je voudrais changer pour : 'response'";
 	webui.call('getError',"").then((response)=> {
 	    /*  PROCCESSING THE RETURN OF THE PYTHON FUNCTION */
 	    console.log(response)
-	    elt.innerHTML = response;	   
+	    elt.innerHTML = response;	   // SHOW ON SCREEN
 	}).catch(
 	    (e) => {
-		console.error("prout", e);
-		elt.innerHTML += "mais on a eu une exception" ;
+		console.error("getErrorJS", e);
+		elt.innerHTML += " but an exception occured" ;
 	    }
 	)	
     }
     
-    document.addEventListener("DOMContentLoaded",()=> setTimeout(prout,1000))
+    if (true) /* with a timeout */
+	document.addEventListener("DOMContentLoaded",()=> setTimeout(getErrorJS,1000))
+    else { /* if I can wait until the socket is connected I will do it */
+	// waitUntilWebSocketConnected 
+	document.addEventListener("DOMContentLoaded",getErrorJS);
+    }
+    
   </script>
 </html>

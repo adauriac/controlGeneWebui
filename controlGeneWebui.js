@@ -51,24 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
     elementsNew[11] = document.getElementById("consignePuissanceNew");  /* Input */
     elementsNew[12] = document.getElementById("consigneDebitNew");      /* Input */
     
-    const leType = [];
-    leType[0] = "Led";
-    leType[1] = "Led";
-    leType[2] = "Label";
-    leType[3] = "Label";
-    leType[4] = "Led";
-    leType[5] = "Label";
-    leType[6] = "Label";
-    leType[7] = "Label";/*"Input"*/
-    leType[8] = "Label";/*"Input"*/
-    leType[9] = "Label";/*"Input"*/
-    leType[10] = "Label";/*"Input"*/
-    leType[11] = "Label";/*"Input"*/
-    leType[12] = "Label";/*"Input"*/
-    leType[13] = "Bouton";
-    leType[14] = "Bouton";
-    leType[15] = "Bouton";
-
     let eltDivBoutonLed = document.getElementById("divBoutonLed");
     let eltDivConsignes = document.getElementById("divConsignes");
     let eltDivValues = document.getElementById("divValues");
@@ -83,6 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
     eltGo.style.top = 105+"px";
     eltTemoin.style.top = 310+"px";
     eltTemoin.style.left = 550+"px";
+
+    function treatAnswer() {
+    }     // FIN     function treatAnswer() {
+    // *************************************************************************
     
     function my_functionJS(e) {
 	/* blink !*/
@@ -101,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		param += " " + ou[i] + " " + elementsNew[i].value;
 	    }
 	}
-	webui.call('my_function2',param).then((response)=> {
+	webui.call('myFunction',param).then((response)=> {
 	    /*  PROCCESSING THE RETURN OF THE PYTHON FUNCTION */
 	    responseSplitted = response.split(" ");
 	    for (let i=0;i<responseSplitted.length;i+=2) {
@@ -120,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		else if (elements[k].classList.contains("led"))
 		    continue;
 		else
-		    alert("Internal impossible error : "+leType[k]+" wrong type");
+		    alert("Internal impossible error");
 	    }
 	});
     }
