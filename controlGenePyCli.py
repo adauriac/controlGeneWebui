@@ -3,6 +3,7 @@ import serial
 import minimalmodbus
 import serial.tools.list_ports as port_list
 import time,sys
+import random # POUR LES TESTS ON SI
 """
                                  WITH A POLLING WATCHDOG (NO THREAD OR RACE)
 class geneControler : can connect and read/write registers
@@ -33,47 +34,60 @@ class geneControler:
     index= dict()
     vals = []
     types = [] # "led", "button", "output", "input"
+    addToIndex = {}
     instrument = "";
-    def __init__(self,myFun=""):
+    watched = False;
+    simul = False;
+    def __init__(self,myFun="",simul=False):
         self.errorTreat = myFun;
+        
+        self.simul = simul;
+        
         self.quoi.append("Arret d'urgence");
         self.ou.append(0x65);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Arret d'urgence"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("led")
 
         self.quoi.append("Defaut critique");
         self.ou.append(0x66);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Defaut critique"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("led")
 
         self.quoi.append("Mesure debit");
         self.ou.append(0x68);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Mesure debit"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("self.output")
 
         self.quoi.append("Mesure puissance");
         self.ou.append(0x6B);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Mesure puissance"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("output")
 
         self.quoi.append("Etat du procede");
         self.ou.append(0x6E);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Etat du procede"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("led")
 
         self.quoi.append("Tension PFC ");
         self.ou.append(0x72);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Tension PFC "] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("output")
 
         self.quoi.append("Courant pont");
         self.ou.append(0x7F);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Courant pont"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("output")
@@ -81,82 +95,66 @@ class geneControler:
         self.quoi.append("Puissance limite basse");
         self.ou.append(0x96);
         self.index["Puissance limite basse"] = len(self.ou)-1;
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.vals.append(-1)
         self.types.append("input")
 
         self.quoi.append("Puissance limite haute");
         self.ou.append(0x97);
         self.index["Puissance limite haute"] = len(self.ou)-1;
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.vals.append(-1)
         self.types.append("input")
 
         self.quoi.append("Debit bas");
         self.ou.append(0xA0);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Debit bas"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("input")
 
         self.quoi.append("Debit haut");
         self.ou.append(0xA1);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Debit haut"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("input")
 
         self.quoi.append("Consigne puissance");
         self.ou.append(0xB2);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Consigne puissance"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("input")
 
         self.quoi.append("Consigne debit");
         self.ou.append(0xB3);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Consigne debit"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("input")
 
         self.quoi.append("Generateur");
         self.ou.append(0xBB);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Generateur"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("button")
 
         self.quoi.append("Gaz");
         self.ou.append(0xBC);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Gaz"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("button")
 
         self.quoi.append("Plasma");
         self.ou.append(0xBD);
+        self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Plasma"] = len(self.ou)-1;
         self.vals.append(-1)
         self.types.append("button")
         # FIN __init__()
-        
-    def readRegister(self,add):
-        """
-        return the int value read, exit if can't read
-        """
-        # print(f"entering readRegister {add}");
-        readingPossible = False    
-        ok = 1
-        ans = [-1]
-        try:
-            ans = self.instrument.read_registers(add,1)
-        except :
-            sys.stdout.writelines("readRegister: Could not read register at 0x%x = %d\n"%(add,add))
-            if add == ALIVE_ADDRESS: # ie probably a test isAlive()
-                sys.stdout.writelines("The board is probably not powered\n")
-            sys.stdout.flush()
-            ok = 0
-        if not ok:
-            if self.treatErr!= "":
-                self.errorTreat(2)
-            else:
-                exit(2) #read error
-        # print(f"leaving readRegister {add}")
-        return ans[0]
-    # FIN  def readRegister(self,add):
 
     def getRegisters(self):
         """
@@ -191,6 +189,7 @@ class geneControler:
             sys.stdout.flush()
             ok = 0
         if not ok:
+            connected = False
             if self.treatErr!= "":
                 self.errorTreat(1)
             else:
@@ -202,7 +201,7 @@ class geneControler:
         """
         return the int value read, exit if can't read
         """
-        # print(f"entering readRegister {add}");
+        print(f"entering readRegister L230 {add}");
         readingPossible = False    
         ok = 1
         ans = [-1]
@@ -211,6 +210,7 @@ class geneControler:
         except :
             ok = 0
         if not ok:
+            self.watched = False
             if self.errorTreat!= "":
                 self.errorTreat(2)
             else:
@@ -261,6 +261,7 @@ class geneControler:
         # self.instrument.debug = True
         sys.stdout.writelines("using %s at %d baud parity %c\n"%(self.instrument.serial.name,self.instrument.serial.baudrate,self.instrument.serial.parity))
         sys.stdout.flush()
+        self.watched = True
         return True
     # FIN connect(self)
     
@@ -304,8 +305,8 @@ if __name__ == '__main__':
         exit(p)
     # FIN myFun(p)
     # ***********************************************************************************
-
-    myGene = geneControler(myFun)
+    
+    myGene = geneControler()
     ans = myGene.connect()
     if ans != True:
         print(ans)

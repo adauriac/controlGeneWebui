@@ -1,7 +1,39 @@
 /* pour forcer le chargement de DOMContentLoaded avant de faire quoique ce soit */
+
 function refresh () {
-    newValues = 1; /* to tell my_function2 to send the new values */
+    newValues = 1; /* to tell myFunctionJS to send the new values */
+    for(let k=0;k<element.length;k++) {
+	if (elements[k].classList.contains("labelOutput")){
+	}
+	else if (elements[k].classList.contains("inputCell")) {
+	    alert(element[k].value);
+	}
+	else if (elements[k].classList.contains("boutonLed")) {
+	}
+	else if (elements[k].classList.contains("led")) {
+	    console.log("led "+elements[k].style.background)
+	}
+	else
+	    alert("Internal impossible error");
+    }
 }
+/*
+   PROPOPSE PAR Hassan DRAGA POUR ATTENDRE Websocket 
+document.addEventListener('DOMContentLoaded', function() {
+
+	// DOM is loaded, and `webui` object should be available.
+	webui.setEventCallback((e) => {
+
+		if (e == webui.event.CONNECTED) {
+			// Connection to the backend is established
+			console.log('Connected.');
+		} else if (e == webui.event.DISCONNECTED) {
+			// Connection to the backend is lost
+			console.log('Disconnected.');
+		}
+	});
+});
+*/
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("hi 2");
@@ -70,13 +102,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }     // FIN     function treatAnswer() {
     // *************************************************************************
     
-    function my_functionJS(e) {
+    function myFunctionJS(e) {
 	/* blink !*/
 	if (eltTemoin.style.visibility == "visible") 
 	    eltTemoin.style.visibility = "hidden"
 	else
 	    eltTemoin.style.visibility = "visible"
-	
 	/*   PREPARE THE PARAMETERS TO SEND TO PYTHON  */
 	param = "";
 	if (newValues) {
@@ -87,6 +118,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		param += " " + ou[i] + " " + elementsNew[i].value;
 	    }
 	}
+	else
+	    param = "205 ?"
+	// console.log(param)
 	webui.call('myFunction',param).then((response)=> {
 	    /*  PROCCESSING THE RETURN OF THE PYTHON FUNCTION */
 	    responseSplitted = response.split(" ");
@@ -99,22 +133,23 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (elements[k].classList.contains("labelOutput")){
 		    elements[k].innerHTML = responseSplitted[i+1];
 		}
-		else if (elements[k].classList.contains("inputCell"))
+		else if (elements[k].classList.contains("inputCell")) {
 		    continue;/*.value = responseSplitted[i+1];*/
-		else if (elements[k].classList.contains("boutonLed"))
-		    continue
-		else if (elements[k].classList.contains("led"))
-		    continue;
+		}
+		else if (elements[k].classList.contains("boutonLed")) {
+		    console.log(elements[k])
+		}
+		else if (elements[k].classList.contains("led")) {
+		    console.log("led "+elements[k].style.background)
+		}
 		else
 		    alert("Internal impossible error");
 	    }
 	});
     }
 
-
     /* pll.addEventListener("change", my_function);*/
     // pll.addEventListener("click", my_function);
     newValues = 1;
-    /* setTimeout(my_functionJS,1000); */
-    setInterval(my_functionJS,1000);
+    setInterval(myFunctionJS,500);
 });
