@@ -58,7 +58,7 @@ body {
     display: inline-block;
     width : 15px;
     height : 15px;
-    background: green;
+    background: #D0D0D0;
     border-radius: 100%;
 }
 
@@ -66,8 +66,15 @@ body {
     display: inline-block;
     width : 25px;
     height : 25px;
-    background: green;
+    background: #D0D0D0;
     border-radius: 100%;
+}
+
+.on {
+    background: green;
+}
+.off {
+    background: red;
 }
 
 #temoin {

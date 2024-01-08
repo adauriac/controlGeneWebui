@@ -6,19 +6,20 @@ import time,sys
 import random # POUR LES TESTS ON SI
 """
                                  WITH A POLLING WATCHDOG (NO THREAD OR RACE)
-class geneControler : can connect and read/write registers
-at initialization one can provide,or not, a function to treat the error,
-if no function is provided an exit is performed
-at connect a function can be provided to choose the serial port,
-if no function provided take the first encountered.
+class geneControler : can connect and read/write registers, also it has a mode simulation
+at initialization one can provide, or not, a function to treat the error,
+connect: if *exactly* one port connected to a board is found the connection is established at BAUD,'N',8,1, TIMEOUT to SLAVE
+         else (ie no port  at all, no port connected or more thanone) no connection is performed
+         In all case the variable messageConction is set.
+read/write : if the timeout is exceeded then an error code is returned (1: write, 2: read) and the connected becomes false
 
-
-Connection at BAUD,'N',8,1.
-The choosen COM is asked to keyboard if there are more than one.
 An infinite loop tests the keyboard in a NON blocking way therefore the loop is short.
 At each beginning of the loop the current time is compared to the time of the last test of the connection.
 If the last test is too old a new test is performed.
-If a reading/writing of a register is too long, the program aborts.
+
+SIMULATION MODE
+fake values are initialized at pseudo-connect
+Each time a value is read it 
 """
 
 TIMEOUT = 0.1 # for reading/writing register a real number in secondes 
@@ -36,13 +37,14 @@ class geneControler:
     types = [] # "led", "button", "output", "input"
     addToIndex = {}
     instrument = "";
-    watched = False;
+    connected = False;
+    messageConnection = "";
     simul = False;
     def __init__(self,myFun="",simul=False):
         self.errorTreat = myFun;
         
         self.simul = simul;
-        
+
         self.quoi.append("Arret d'urgence");
         self.ou.append(0x65);
         self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
@@ -155,6 +157,9 @@ class geneControler:
         self.vals.append(-1)
         self.types.append("button")
         # FIN __init__()
+    # ################################################################################
+    def __del__(self):
+        self.connected = False
 
     def getRegisters(self):
         """
@@ -169,17 +174,29 @@ class geneControler:
             ans += "%2d Ox%x %3d %26s %5d  %s\n"%(i,self.ou[i],self.ou[i],self.quoi[i],self.vals[i],self.types[i])
         return ans
     # FIN def getRegisters(self):
+    # ################################################################################
 
     def isAlive(self):
+        if self.simul:
+            print("watch modifying register")
+            self.fakeValues[self.addToIndex[0x6B]] += 1
+            self.fakeValues[self.addToIndex[0x68]] += 1
+            self.fakeValues[self.addToIndex[0x7F]] += 1
+            self.fakeValues[self.addToIndex[0x72]] += 1
+            return True
         ans = self.readRegister(ALIVE_ADDRESS)
         return ans==ALIVE_VALUE
     # FIN def isAlive():
+    # ################################################################################
 
     def writeRegister(self,add,value):
         """
         call errorTreat or exit if can't write
         """
         # print(f"entering writeRegister {add}")
+        if self.simul:
+            self.fakeValues[self.addToIndex[add]] = value;
+            return ;
         readingPossible = False
         ok = 1
         try:
@@ -190,18 +207,21 @@ class geneControler:
             ok = 0
         if not ok:
             connected = False
-            if self.treatErr!= "":
+            if self.errorTreat!= "":
                 self.errorTreat(1)
             else:
                 exit(1) # write error
         #print(f"leaving writeRegister {add}")
     # FIN def writeRegister(add,value):
+    # ################################################################################
 
     def readRegister(self,add):
         """
         return the int value read, exit if can't read
         """
-        print(f"entering readRegister L230 {add}");
+        if self.simul:
+            return self.fakeValues[self.addToIndex[add]];
+        # print(f"entering readRegister L230 {add}");
         readingPossible = False    
         ok = 1
         ans = [-1]
@@ -210,7 +230,7 @@ class geneControler:
         except :
             ok = 0
         if not ok:
-            self.watched = False
+            self.connected = False
             if self.errorTreat!= "":
                 self.errorTreat(2)
             else:
@@ -218,6 +238,7 @@ class geneControler:
         # print(f"leaving readRegister {add}")
         return ans[0]
     # FIN  def readRegister(add)
+    # ################################################################################
     
     def connect(self):
         """
@@ -225,10 +246,27 @@ class geneControler:
         return True if ok
                a string describing the error else
         """
+        if self.simul:
+            n = len(self.types)
+            self.fakeValues= [0]*n
+            for i in range(n):
+                if self.types[i] == "button" or self.types[i] == "led":
+                    self.fakeValues[i] = [0,0x7F7F,234][random.randint(0,2)]
+                else:
+                    self.fakeValues[i] = random.randint(0,32767);
+            self.connected = True
+            self.messageConnection = "simulation"
+            self.connectSimul()
+            return True
         ports = list(port_list.comports())
         # choice of the port to use
+        if self.simul:
+            self.connectSimul()
+            return True
         if len(ports)==0:
-            return "No serial port available"
+             self.messageConnection = "No serial port available"
+             self.connected = False
+             return False
         lesInstruments = [] # instruments that can be used
         for k,port in enumerate(ports): # try to use all listed ports
             ser = serial.Serial(port.device)
@@ -246,9 +284,15 @@ class geneControler:
                 pass
             ser.close()
         if len(lesInstruments)==0:
-            return "no serial port connected to the generator"
+            self.messageConnection = "No serial port connected to the generator"
+            self.connected = False
+            return False
         if len(lesInstruments)>1 :
-            return "%d port connected to a generator, please plug only the desired one"%(len(lesInstruments))
+            msg = "%d port connected to a generator, please plug only the desired one"%(len(lesInstruments))
+            self.messageConnection = msg
+            self.connected = False
+            return False
+
         # use the port with index 0
         port = ports[0]
         ser = serial.Serial(port.device)
@@ -259,9 +303,9 @@ class geneControler:
         self.instrument.mode = 'rtu'
         self.instrument.timeout = ser.timeout
         # self.instrument.debug = True
-        sys.stdout.writelines("using %s at %d baud parity %c\n"%(self.instrument.serial.name,self.instrument.serial.baudrate,self.instrument.serial.parity))
-        sys.stdout.flush()
-        self.watched = True
+        msg = "using %s at %d baud parity %c\n"%(self.instrument.serial.name,self.instrument.serial.baudrate,self.instrument.serial.parity)
+        self.messageConnection = msg
+        self.connected = True
         return True
     # FIN connect(self)
     
@@ -306,7 +350,7 @@ if __name__ == '__main__':
     # FIN myFun(p)
     # ***********************************************************************************
     
-    myGene = geneControler()
+    myGene = geneControler() # simul=True)
     ans = myGene.connect()
     if ans != True:
         print(ans)
@@ -360,3 +404,16 @@ if __name__ == '__main__':
             continue
         myGene.vals[o] = q
         myGene.writeRegister(myGene.ou[o],q)
+
+    print("la fonction testRW(myGene) est disponible")
+    def testRW(myGene):
+        n = len(myGene.vals)
+        for i in range(16):
+            a = myGene.readRegister(myGene.ou[i])
+            b = random.randint(0,32767)
+            myGene.writeRegister(myGene.ou[i],b)
+            c =  myGene.readRegister(myGene.ou[i])
+            add = myGene.ou[i]
+            quoi = myGene.quoi[i]
+            print("En 0x%2x il y avait 0x%04x, je vais mettre 0x%04x, j'ai relu 0x%04x  %s"%(add,a,b,c,quoi))
+        

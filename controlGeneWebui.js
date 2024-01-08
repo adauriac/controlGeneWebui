@@ -1,22 +1,5 @@
 /* pour forcer le chargement de DOMContentLoaded avant de faire quoique ce soit */
 
-function refresh () {
-    newValues = 1; /* to tell myFunctionJS to send the new values */
-    for(let k=0;k<element.length;k++) {
-	if (elements[k].classList.contains("labelOutput")){
-	}
-	else if (elements[k].classList.contains("inputCell")) {
-	    alert(element[k].value);
-	}
-	else if (elements[k].classList.contains("boutonLed")) {
-	}
-	else if (elements[k].classList.contains("led")) {
-	    console.log("led "+elements[k].style.background)
-	}
-	else
-	    alert("Internal impossible error");
-    }
-}
 /*
    PROPOPSE PAR Hassan DRAGA POUR ATTENDRE Websocket 
 document.addEventListener('DOMContentLoaded', function() {
@@ -34,6 +17,18 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 });
 */
+const elements = [];
+const elementsNew = [];
+let parametresToSend = "";
+let newValues = 0;
+
+function refresh () { // called when the button is clicked
+    newValues = 1; /* to tell myFunctionJS to send the new values */
+}
+
+function isStringAnInteger(str) {
+  return !isNaN(str) && Number.isInteger(parseFloat(str));
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("hi 2");
@@ -56,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	[0xBD,15]]);/* Plasma               0xBD Bouton */
     const ou = [];
     lesIndex.forEach(function(value,key) { ou[value] = key;});
-    const elements = [];
     elements[0] = document.getElementById("arrUrg");                 /* Led */
     elements[1] = document.getElementById("defCrit");                /* Led */
     elements[2] = document.getElementById("flowMeas");               /* Label */
@@ -73,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
     elements[13] = document.getElementById("gene");                  /* Bouton */
     elements[14] = document.getElementById("gaz");                   /* Bouton */
     elements[15] = document.getElementById("plasma");                /* Bouton */
-    const elementsNew = [];
     for(let i=0;i<elements.length;i++)
 	elementsNew[i] = elements[i];
     elementsNew[7] = document.getElementById("limitPuissanceBasseNew"); /* Input */
@@ -97,10 +90,73 @@ document.addEventListener("DOMContentLoaded", () => {
     eltGo.style.top = 105+"px";
     eltTemoin.style.top = 310+"px";
     eltTemoin.style.left = 550+"px";
-
+    
     function treatAnswer() {
     }     // FIN     function treatAnswer() {
     // *************************************************************************
+
+    function prepareParam(){
+	param = "";
+	for(let i=0;i<elements.length;i++) {
+	    if (elements[i]==elementsNew[i])
+		continue;
+	    // from here the element is GUI modifiable
+	    val = elementsNew[i].value;
+	    if (val == "") {
+		val = elements[i].innerHTML;
+	    }
+	    if (!isStringAnInteger(val)) {
+		alert(val+" is not a number");
+		elementsNew[i].value = "";
+		return "";
+	    }
+	    param += " " + ou[i] + " " + val;
+	    // P->puissance D->debit L->limite C->consigne
+	    if (ou[i] == 0x96)
+		PLB = parseInt(val);
+	    else if (ou[i] == 0x97)
+		PLH = parseInt(val);
+	    else if (ou[i] == 0xA0)
+		DLB = parseInt(val);
+	    else if (ou[i] == 0xA1)
+		DLH = parseInt(val);
+	    else if (ou[i] == 0xB2)
+		PC = parseInt(val);
+	    else if (ou[i] == 0xB3)
+		DC = parseInt(val);
+	}
+
+	console.log("PLB",PLB," PLH",PLH," PC",PC);
+	console.log("DLB",DLB," DLH",DLH," DC",DC);
+	// verification des bornes
+	let wrong=0;
+	if (PLB>PLH) {
+	    wrong=1;
+	    alert("Limits of power not compatible");
+	}
+	if (DLB>DLH) {
+	    wrong+=10;
+	    alert("Limits of flow not compatible");
+	}
+	if ((PC<PLB) || (PC>PLH)) {
+	    wrong = 100;
+	    alert("Power target out of bonds");
+	}
+	if ((DC<DLB) || (DC>DLH)) {
+	    wrong += 1000;
+	    alert("flow target out of bonds");
+	}
+	if (wrong==0)
+	    return param;
+	// here an error was found
+	for(let i=0;i<elements.length;i++) {
+	    if (elements[i]==elementsNew[i])
+		continue;
+	    elementsNew[i].value = "";
+	}
+	return "";
+    }    // FIN    function prepareParam(){
+    // ******************************************************************
     
     function myFunctionJS(e) {
 	/* blink !*/
@@ -109,20 +165,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	else
 	    eltTemoin.style.visibility = "visible"
 	/*   PREPARE THE PARAMETERS TO SEND TO PYTHON  */
-	param = "";
+	let param = "";
 	if (newValues) {
 	    newValues = 0;
-	    for(let i=0;i<elements.length;i++) {
-		if (elements[i]==elementsNew[i])
-		    continue;
-		param += " " + ou[i] + " " + elementsNew[i].value;
-	    }
+	    param = prepareParam();
 	}
-	else
-	    param = "205 ?"
-	// console.log(param)
+	// console.log("MyFunctionJS says: param for webui.call=",param)
 	webui.call('myFunction',param).then((response)=> {
 	    /*  PROCCESSING THE RETURN OF THE PYTHON FUNCTION */
+	    // console.log("myFunctionJS L 124 I receveid ",response)
 	    responseSplitted = response.split(" ");
 	    for (let i=0;i<responseSplitted.length;i+=2) {
 		let add = Number(responseSplitted[i]);
@@ -130,17 +181,24 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (!lesIndex.has(add))
 		    alert("oops JS recevied "+add+" an unknown register address")
 		let k = lesIndex.get(add);
+		// console.log("myFunctionJS L 133 add=",add," val=",val," k=",k)
 		if (elements[k].classList.contains("labelOutput")){
-		    elements[k].innerHTML = responseSplitted[i+1];
+		    elements[k].innerHTML = val;
 		}
 		else if (elements[k].classList.contains("inputCell")) {
-		    continue;/*.value = responseSplitted[i+1];*/
+		    elements[k].classList;/*.value = responseSplitted[i+1];*/
 		}
-		else if (elements[k].classList.contains("boutonLed")) {
-		    console.log(elements[k])
-		}
-		else if (elements[k].classList.contains("led")) {
-		    console.log("led "+elements[k].style.background)
+		else if ((elements[k].classList.contains("boutonLed")) ||
+			 (elements[k].classList.contains("led"))){
+		    elements[k].classList.remove("on")
+		    elements[k].classList.remove("off")
+		    //  la couleur grise de defaut
+		    if (val==0) {
+			elements[k].classList.add("off");
+		    }
+		    else if (val==0x7f7f) {
+			elements[k].classList.add("on");
+		    }
 		}
 		else
 		    alert("Internal impossible error");
@@ -150,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* pll.addEventListener("change", my_function);*/
     // pll.addEventListener("click", my_function);
-    newValues = 1;
+    newValues = 0;
+    //setTimeout(myFunctionJS,500);
     setInterval(myFunctionJS,500);
 });
