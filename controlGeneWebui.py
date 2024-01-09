@@ -2,7 +2,35 @@ from controlGenePyCli import *
 from webui import webui
 
 """
-example d'acces aux registres de la carte + webui = LA TOTALE
+                                       GENERATOR'S GUI
+
+This is one of (the main) of the 6 files :
+frontend: controlGeneWebui.css 
+          controlGeneWebui.html
+          controlGeneWebui.js
+          controlGeneWebUiError.html
+backend:
+          controlGeneWebui.py
+          controlGenePyCli.py
+
+run : "python  controlGeneWebui.py"
+
+It open the controlGeneWebui.html (or controlGeneWebUiError.html in case of error) in a firefox browser.
+controlGeneWebui.html run the javascript script controlGeneWebui.js which start a timer.
+This timer run a python function 'myFunction' from controlGeneWebui.py.
+Python receives a string which contains an even number of integer. It is "address value ... address value".
+This function returns also a string with the same convention.
+The js script modify accordingly the gui.
+
+In case of connection error controlGeneWebUiError.html which contains a js script is loaded.
+
+In case of lost connection detected by a timeout in read/wrtite procedure) the python backend
+controlGeneWebui.py opens an alert and quit.
+
+The way the widget are shown is decide in the frontend controlGeneWebui. This work could be splitted
+using some convention not yet defined like led.on led.off led.invisible etc
+
+When val is written in the register 0x66 (102) val+(0,256,512,768) is re-read ?
 """
 
 def getError(e : webui.event):

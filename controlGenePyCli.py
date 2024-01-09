@@ -284,11 +284,11 @@ class geneControler:
                 pass
             ser.close()
         if len(lesInstruments)==0:
-            self.messageConnection = "No serial port connected to the generator"
+            self.messageConnection = "The generator is not connected, altough some serial ports are availables"
             self.connected = False
             return False
         if len(lesInstruments)>1 :
-            msg = "%d port connected to a generator, please plug only the desired one"%(len(lesInstruments))
+            msg = "%d port connected to a generator, please plug *only* the desired one"%(len(lesInstruments))
             self.messageConnection = msg
             self.connected = False
             return False
@@ -308,7 +308,26 @@ class geneControler:
         self.connected = True
         return True
     # FIN connect(self)
-    
+
+    def test(self,nTest):
+        """
+        nTest est la liste du nombre de test souhaite pour le registre d'adresse ou[i]
+        """
+        import random
+        for i,n in enumerate(nTest):
+            if n==0:
+                continue
+            add = self.ou[i]
+            S = set()
+            for c in range(n):
+                val = random.randint(1,32767)
+                self.writeRegister(add,val)
+                relu = self.readRegister(add)
+                dif = relu-val
+                S.add(dif)
+            print(add,n,S)
+    # FIN test(self)
+            
 # FIN class geneControler
 # ***********************************************************************************
 
@@ -352,8 +371,8 @@ if __name__ == '__main__':
     
     myGene = geneControler() # simul=True)
     ans = myGene.connect()
-    if ans != True:
-        print(ans)
+    if not ans:
+        print(myGene.messageConnection)
         exit(1)
     mySt = nonBlockingString() # pour faire une lecture non bloquante du clavier
     somethingNew = True
