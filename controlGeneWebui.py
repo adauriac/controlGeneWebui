@@ -94,8 +94,8 @@ connected = myGene.connect()
 
 if connected != True:
     MyWindowErr = webui.window()
-    MyWindowErr.show("controlGeneWebuiError.html",webui.browser.firefox)
     MyWindowErr.bind("getError", getError )
+    MyWindowErr.show("controlGeneWebuiError.html",webui.browser.firefox)
     webui.wait()
     exit(1)
 

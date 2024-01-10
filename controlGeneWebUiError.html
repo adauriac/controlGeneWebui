@@ -7,28 +7,25 @@
   </body>
   <script>
     
-    function getErrorJS () {
-	console.log("hi from error");
-	let elt = document.getElementById("monDiv");
-	elt.innerHTML += " que je voudrais changer pour : 'response'";
-	webui.call('getError',"").then((response)=> {
-	    /*  PROCCESSING THE RETURN OF THE PYTHON FUNCTION */
-	    console.log(response)
-	    elt.innerHTML = response;	   // SHOW ON SCREEN
-	}).catch(
-	    (e) => {
-		console.error("getErrorJS", e);
-		elt.innerHTML += " but an exception occured" ;
-	    }
-	)	
+    function getErrorJS (e) {
+	if (e == webui.event.CONNECTED) {
+	    let elt = document.getElementById("monDiv");
+	    elt.innerHTML += " que je voudrais changer pour : 'response'";
+	    webui.call('getError',"").then((response)=> {
+		/*  PROCCESSING THE RETURN OF THE PYTHON FUNCTION */
+		console.log(response)
+		elt.innerHTML = response;	   // SHOW ON SCREEN
+	    }).catch(
+		(e) => {
+		    console.error("getErrorJS", e);
+		    elt.innerHTML += " but an exception occured" ;
+		}
+	    )
+	}
     }
     
-    if (true) /* with a timeout */
-	document.addEventListener("DOMContentLoaded",()=> setTimeout(getErrorJS,1000))
-    else { /* if I can wait until the socket is connected I will do it */
-	// waitUntilWebSocketConnected 
-	document.addEventListener("DOMContentLoaded",getErrorJS);
-    }
+    // wait Until WebSocket Connected
+    document.addEventListener("DOMContentLoaded",()=>{webui.setEventCallback(getErrorJS)})
     
   </script>
 </html>
