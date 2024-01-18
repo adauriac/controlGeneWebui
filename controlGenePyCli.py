@@ -18,8 +18,9 @@ At each beginning of the loop the current time is compared to the time of the la
 If the last test is too old a new test is performed.
 
 SIMULATION MODE
-fake values are initialized at pseudo-connect
-Each time a value is read it 
+fake values are initialized at pseudo-connect with fixed values (see the connect() method)
+Each time an output value (power 0x6b, flow 0x68, current 0x7f tension 0x72) is read these
+value in randomly modified inside the admissible range)
 """
 
 TIMEOUT = 0.1 # for reading/writing register a real number in secondes 
@@ -177,13 +178,6 @@ class geneControler:
     # ################################################################################
 
     def isAlive(self):
-        if self.simul:
-            print("watch modifying register")
-            self.fakeValues[self.addToIndex[0x6B]] += 1
-            self.fakeValues[self.addToIndex[0x68]] += 1
-            self.fakeValues[self.addToIndex[0x7F]] += 1
-            self.fakeValues[self.addToIndex[0x72]] += 1
-            return True
         ans = self.readRegister(ALIVE_ADDRESS)
         return ans==ALIVE_VALUE
     # FIN def isAlive():
@@ -220,7 +214,25 @@ class geneControler:
         return the int value read, exit if can't read
         """
         if self.simul:
-            return self.fakeValues[self.addToIndex[add]];
+            # at reading an OUTPUT register a random admissible new value is set
+            k = self.addToIndex[add]
+            if add==0x6b: # power
+                self.fakeValues[k] += random.randint(-1,1)
+                if self.fakeValues[k] > self.fakeValues[self.addToIndex[0x97]]:
+                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0x97]]
+                if self.fakeValues[k] < self.fakeValues[self.addToIndex[0x96]]:
+                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0x96]]
+            elif add==0x68: # flow
+                self.fakeValues[k] += random.randint(-1,1)
+                if self.fakeValues[k] > self.fakeValues[self.addToIndex[0xA1]]:
+                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0xA1]]
+                if self.fakeValues[k] < self.fakeValues[self.addToIndex[0xA0]]:
+                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0xA0]]
+            elif add==0x7f: #bridge current
+                self.fakeValues[k] += random.randint(-1,1)
+            elif add==0x72: #tension
+                self.fakeValues[k] += random.randint(-1,1)
+            return self.fakeValues[k];
         # print(f"entering readRegister L230 {add}");
         readingPossible = False    
         ok = 1
@@ -246,17 +258,26 @@ class geneControler:
         return True if ok
                a string describing the error else
         """
+        self.fakeValues = []
         if self.simul:
-            n = len(self.types)
-            self.fakeValues= [0]*n
-            for i in range(n):
-                if self.types[i] == "button" or self.types[i] == "led":
-                    self.fakeValues[i] = [0,0x7F7F,234][random.randint(0,2)]
-                else:
-                    self.fakeValues[i] = random.randint(0,32767);
+            self.fakeValues.append(0)   #  arret d'urgence
+            self.fakeValues.append(0)   #  defaut cririque
+            self.fakeValues.append(10)  #  Mesure debit
+            self.fakeValues.append(100) #  Mesure puissance
+            self.fakeValues.append(0)   #  Etat du procede
+            self.fakeValues.append(20)  #  Tension PFC
+            self.fakeValues.append(200) #  Courant pont
+            self.fakeValues.append(80)  #  Puissance limite basse
+            self.fakeValues.append(120) #  Puissance limite haut
+            self.fakeValues.append(5)   #  Debit bas
+            self.fakeValues.append(15)  #  Debit haut
+            self.fakeValues.append(100) #  Consigne puissance
+            self.fakeValues.append(10)  #  Consigne debit
+            self.fakeValues.append(0)   #  Generateur
+            self.fakeValues.append(0)   #  Gaz
+            self.fakeValues.append(0)   #  Plasma
             self.connected = True
             self.messageConnection = "simulation"
-            self.connectSimul()
             return True
         ports = list(port_list.comports())
         # choice of the port to use
