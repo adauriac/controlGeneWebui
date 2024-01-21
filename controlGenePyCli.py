@@ -3,7 +3,6 @@ import serial
 import minimalmodbus
 import serial.tools.list_ports as port_list
 import time,sys
-import random # POUR LES TESTS ON SI
 """
                                  WITH A POLLING WATCHDOG (NO THREAD OR RACE)
 class geneControler : can connect and read/write registers, also it has a mode simulation
@@ -19,8 +18,10 @@ If the last test is too old a new test is performed.
 
 SIMULATION MODE
 fake values are initialized at pseudo-connect with fixed values (see the connect() method)
-Each time an output value (power 0x6b, flow 0x68, current 0x7f tension 0x72) is read these
-value in randomly modified inside the admissible range)
+Every second (see line 272 threading.Timer(1,...)) the output values (power 0x6b, flow 0x68,
+current 0x7f tension 0x72) are randomly modified inside the admissible range.
+Moreover with probability 1/100 (see ) a critical default (0x65) and  emergency stop (0x65)
+are set.
 """
 
 TIMEOUT = 0.1 # for reading/writing register a real number in secondes 
@@ -65,7 +66,7 @@ class geneControler:
         self.addToIndex[self.ou[-1]] = len(self.ou)- 1;
         self.index["Mesure debit"] = len(self.ou)-1;
         self.vals.append(-1)
-        self.types.append("self.output")
+        self.types.append("output")
 
         self.quoi.append("Mesure puissance");
         self.ou.append(0x6B);
@@ -159,9 +160,11 @@ class geneControler:
         self.types.append("button")
         # FIN __init__()
     # ################################################################################
-    def __del__(self):
-        self.connected = False
 
+    def __del__(self):
+        if self.connected and self.simul:
+            self.threadSimul.cancel()
+    
     def getRegisters(self):
         """
         set vals and return a string ready to be printed
@@ -178,6 +181,8 @@ class geneControler:
     # ################################################################################
 
     def isAlive(self):
+        if self.simul:
+            return True
         ans = self.readRegister(ALIVE_ADDRESS)
         return ans==ALIVE_VALUE
     # FIN def isAlive():
@@ -214,24 +219,7 @@ class geneControler:
         return the int value read, exit if can't read
         """
         if self.simul:
-            # at reading an OUTPUT register a random admissible new value is set
             k = self.addToIndex[add]
-            if add==0x6b: # power
-                self.fakeValues[k] += random.randint(-1,1)
-                if self.fakeValues[k] > self.fakeValues[self.addToIndex[0x97]]:
-                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0x97]]
-                if self.fakeValues[k] < self.fakeValues[self.addToIndex[0x96]]:
-                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0x96]]
-            elif add==0x68: # flow
-                self.fakeValues[k] += random.randint(-1,1)
-                if self.fakeValues[k] > self.fakeValues[self.addToIndex[0xA1]]:
-                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0xA1]]
-                if self.fakeValues[k] < self.fakeValues[self.addToIndex[0xA0]]:
-                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0xA0]]
-            elif add==0x7f: #bridge current
-                self.fakeValues[k] += random.randint(-1,1)
-            elif add==0x72: #tension
-                self.fakeValues[k] += random.randint(-1,1)
             return self.fakeValues[k];
         # print(f"entering readRegister L230 {add}");
         readingPossible = False    
@@ -251,7 +239,7 @@ class geneControler:
         return ans[0]
     # FIN  def readRegister(add)
     # ################################################################################
-    
+
     def connect(self):
         """
         connect the instrument
@@ -260,6 +248,38 @@ class geneControler:
         """
         self.fakeValues = []
         if self.simul:
+            import random,threading
+            def fakeLife():
+                add = 0x65 # emergency stop
+                k = self.addToIndex[add]
+                self.fakeValues[k] == 0x7f7f if random.randint(0,99)==0 else 0
+                add = 0x66 # defaut critique
+                k = self.addToIndex[add]
+                self.fakeValues[k] == 0x7f7f if random.randint(0,99)==0 else 0
+                add=0x6b # power
+                k = self.addToIndex[add]
+                self.fakeValues[k] += random.randint(-1,1)
+                if self.fakeValues[k] > self.fakeValues[self.addToIndex[0x97]]:
+                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0x97]]
+                if self.fakeValues[k] < self.fakeValues[self.addToIndex[0x96]]:
+                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0x96]]
+                add=0x68 # flow
+                k = self.addToIndex[add]
+                self.fakeValues[k] += random.randint(-1,1)
+                if self.fakeValues[k] > self.fakeValues[self.addToIndex[0xA1]]:
+                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0xA1]]
+                if self.fakeValues[k] < self.fakeValues[self.addToIndex[0xA0]]:
+                    self.fakeValues[k] = self.fakeValues[self.addToIndex[0xA0]]
+                add=0x7f #bridge current
+                k = self.addToIndex[add]
+                self.fakeValues[k] += random.randint(-1,1)
+                add=0x72 #tension
+                k = self.addToIndex[add]
+                self.fakeValues[k] += random.randint(-1,1)
+                self.threadSimul = threading.Timer(1,fakeLife) # relance apre 1 sec
+                if self.connected:
+                    self.threadSimul.start()
+            # FIN fakeLife
             self.fakeValues.append(0)   #  arret d'urgence
             self.fakeValues.append(0)   #  defaut cririque
             self.fakeValues.append(10)  #  Mesure debit
@@ -278,7 +298,10 @@ class geneControler:
             self.fakeValues.append(0)   #  Plasma
             self.connected = True
             self.messageConnection = "simulation"
+            fakeLife()
+            # foo()
             return True
+        # from here this not a simulation 
         ports = list(port_list.comports())
         # choice of the port to use
         if self.simul:
@@ -352,9 +375,12 @@ class geneControler:
 # FIN class geneControler
 # ***********************************************************************************
 
+# ***********************************************************************************
+#                                            EN AVANT SIMONE
+# ***********************************************************************************
 if __name__ == '__main__':
     import msvcrt
-
+    
     class nonBlockingString:
         """
         Cette classe permet une lecture NON bloquente du clavier.
@@ -389,8 +415,8 @@ if __name__ == '__main__':
         exit(p)
     # FIN myFun(p)
     # ***********************************************************************************
-    
-    myGene = geneControler() # simul=True)
+    print("\nRun in simulation mode if called with any argument\n\n")
+    myGene = geneControler( simul=len(sys.argv) == 2 )
     ans = myGene.connect()
     if not ans:
         print(myGene.messageConnection)
@@ -413,7 +439,7 @@ if __name__ == '__main__':
             somethingNew = False
             ans = myGene.getRegisters()
             sys.stdout.writelines(ans)
-            sys.stdout.writelines("\nenter the register number and the value to set, or q for quit : ")
+            sys.stdout.writelines("\nenter the register number and the value to set, or q for quit,or 'return' to see current values : ")
             sys.stdout.flush()
         # ans = input("entrer le numéro du registre et la valeur a y mettre, ou q pour quitter ")
         ans = mySt.getKbd()
@@ -444,8 +470,9 @@ if __name__ == '__main__':
             continue
         myGene.vals[o] = q
         myGene.writeRegister(myGene.ou[o],q)
-
+    myGene.__del__()
     print("la fonction testRW(myGene) est disponible")
+    
     def testRW(myGene):
         n = len(myGene.vals)
         for i in range(16):
