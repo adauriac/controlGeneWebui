@@ -28,7 +28,7 @@ TIMEOUT = 0.1 # for reading/writing register a real number in secondes
 BAUD = 9600
 SLAVE = 3
 ALIVE_ADDRESS = 205
-ALIVE_VALUE = 330
+ALIVE_VALUE = 303
 WATCHDOGTIMESEC = 1  # a float in second, a new test is made is 
 
 class geneControler:
