@@ -34,7 +34,11 @@ const elementsNew = [];
 let parametresToSend = "";
 let newValues = 0;
 
-function refresh () { // called when the button is clicked
+function cliqued(qui) {// called when one of the 3 buttons gaz/gene/plasma is clicked
+    alert(qui);
+}
+
+function refresh () { // called when the button "submit" is clicked
     newValues = 1; /* to tell watchdogFunctionJS to send the new values */
 }
 
@@ -103,7 +107,128 @@ document.addEventListener("DOMContentLoaded", () => {
     eltTemoin.style.top = 310+"px";
     eltTemoin.style.left = 550+"px";
     
-    function treatAnswer(answer) {
+    function treatAnswer(response) {
+	//  PROCCESSING THE RETURN OF THE PYTHON FUNCTION
+	//  SHOW THE RECEVEID VALUES
+	console.log("reponse du backend new",response);
+	responseSplitted = response.split(" ");
+	for (let i=0;i<responseSplitted.length;i+=2) {
+	    let add = Number(responseSplitted[i]);
+	    let val = responseSplitted[i+1];
+	    let k = lesIndex.get(add);
+	    let elt = elements[k];
+	    if (add == 0x65) {/* Arret d'urgence         0x65 Led */
+		elt.classList.remove("on")
+		elt.classList.remove("off")
+		if (val==0)
+		    elt.classList.add("on")
+		else if (val==0x7F7F)
+		    elt.classList.add("off")
+	    }
+	    else if (add == 0x66) {/* Defaut critique         0x66 Led */
+		elt.classList.remove("on")
+		elt.classList.remove("off")
+		if (val==0)
+		    elt.classList.add("on")
+		else if (val==0x7F7F)
+		    elt.classList.add("off")
+	    }
+	    else if (add == 0x68) {/* Debit mesure            0x68 Label */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0x6B) { /* Puissance mesure        0x6B Label */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0x6E) { /* Etat du procede         0x67 Led */
+		elt.classList.remove("on")
+		elt.classList.remove("off")
+		if (val==0)
+		    elt.classList.add("on")
+		else if (val==0x7F7F)
+		    elt.classList.add("off")
+	    }
+	    else if (add == 0x72) { /* Tension mesure          0x72 Label */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0x7F) { /* Courant mesure          0x7F Label */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0x96) { /* Limite puissance basse  0x96 Input */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0x97) { /* Limite puissance haute  0x97 Input */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0xA0) { /* Limite debit bas        0xA0 Input */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0xA1) { /* Limite debit haut      0xA1 Input */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0xB2) { /* Consigne puissance     0xB2 Input */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0xB3) { /* Consigne debit         0xB3 Input */
+		elt.innerHTML = val;
+	    }
+	    else if (add == 0xBB) { /* Generateur             0xBB Bouton */
+		// ored if 0, green if 0X7f7f; grey esle 
+		elt.classList.remove("on")
+		elt.classList.remove("off")
+		if (val==0)
+		    elt.classList.add("on")
+		else if (val==0x7F7F)
+		    elt.classList.add("off")
+	    }
+	    else if (add == 0xBC) { /* Gaz                    0xBC Bouton */
+		elt.classList.remove("on")
+		elt.classList.remove("off")
+		if (val==0)
+		    elt.classList.add("on")
+		else if (val==0x7F7F)
+		    elt.classList.add("off")
+	    }
+	    else if (add == 0xBD) { /* Plasma                 0xBD Bouton */
+		elt.classList.remove("on")
+		elt.classList.remove("off")
+		if (val==0)
+		    elt.classList.add("on")
+		else if (val==0x7F7F)
+		    elt.classList.add("off")
+		console.log(k);		
+	    }
+	    else { /* an unknown register */
+		console.log(k);		
+		alert("unknown register address received STOP ALL");
+	    }
+	    
+	    if (0) {
+		if (!lesIndex.has(add))
+		    alert("oops JS recevied "+add+" an unknown register address")
+		let k = lesIndex.get(add);
+		// console.log("watchdogFunctionJS L 133 add=",add," val=",val," k=",k)
+		if (elements[k].classList.contains("labelOutput")){
+		    elements[k].innerHTML = val;
+		}
+		else if (elements[k].classList.contains("inputCell")) {
+		    elements[k].classList;/*.value = responseSplitted[i+1];*/
+		}
+		else if ((elements[k].classList.contains("boutonLed")) ||
+			 (elements[k].classList.contains("led"))){
+		    elements[k].classList.remove("on")
+		    elements[k].classList.remove("off")
+		    //  la couleur grise de defaut 
+		    if (val==0) {
+			elements[k].classList.add("off");
+		    }
+		    else if (val==0x7f7f) {
+			elements[k].classList.add("on");
+		    }
+		}
+		else
+		    alert("Internal impossible error");
+	    } // fin if(0)
+	} // fin loop 
     }     // FIN     function treatAnswer() {
     // *************************************************************************
 
@@ -142,8 +267,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		DC = parseInt(val);
 	}
 
-	console.log("PLB",PLB," PLH",PLH," PC",PC);
-	console.log("DLB",DLB," DLH",DLH," DC",DC);
 	// verification des bornes
 	let wrong=0;
 	if (PLB>PLH) {
@@ -187,45 +310,14 @@ document.addEventListener("DOMContentLoaded", () => {
 	    param = prepareParam();
 	}
 	// console.log("MyFunctionJS says: param for webui.call=",param)
-	webui.call('myFunction',param).then((response)=> {
-	    /*  PROCCESSING THE RETURN OF THE PYTHON FUNCTION */
-	    // console.log("watchdogFunctionJS L 124 I receveid ",response)
-	    alert("response "+response)
-	    responseSplitted = response.split(" ");
-	    for (let i=0;i<responseSplitted.length;i+=2) {
-		let add = Number(responseSplitted[i]);
-		let val = responseSplitted[i+1];
-		if (!lesIndex.has(add))
-		    alert("oops JS recevied "+add+" an unknown register address")
-		let k = lesIndex.get(add);
-		// console.log("watchdogFunctionJS L 133 add=",add," val=",val," k=",k)
-		if (elements[k].classList.contains("labelOutput")){
-		    elements[k].innerHTML = val;
-		}
-		else if (elements[k].classList.contains("inputCell")) {
-		    elements[k].classList;/*.value = responseSplitted[i+1];*/
-		}
-		else if ((elements[k].classList.contains("boutonLed")) ||
-			 (elements[k].classList.contains("led"))){
-		    elements[k].classList.remove("on")
-		    elements[k].classList.remove("off")
-		    //  la couleur grise de defaut 
-		    if (val==0) {
-			elements[k].classList.add("off");
-		    }
-		    else if (val==0x7f7f) {
-			elements[k].classList.add("on");
-		    }
-		}
-		else
-		    alert("Internal impossible error");
-	    }
-	});
+	console.log("envoi au backend",param);
+	webui.call('myFunction',param).then((response)=> treatAnswer(response));
     } // FIN     function watchdogFunctionJS(e) 
+    // ******************************************************************
 
     /* pll.addEventListener("change", my_function);*/
     // pll.addEventListener("click", my_function);
     newValues = 0;
     //setTimeout(watchdogFunctionJS,500); // un seul appel
-    setInterval(watchdogFunctionJS,500*2); // appel recurent
+    setInterval(watchdogFunctionJS,500*2*5); // appel recurent
 });

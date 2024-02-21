@@ -51,7 +51,7 @@ def myFunction(e : webui.event):
     """
     global myGene
     param = e.window.get_str(e, 0)
-    # print(f"python says :entering myFunction with |{param}|")
+    print(f"python says :entering myFunction with |{param}|")
     if not myGene.connected:
         return "error"
     #           WRITE THE REGISTERS AS ASKED BY THE JS THRU THE PARAM
@@ -68,7 +68,7 @@ def myFunction(e : webui.event):
     #BIDON CI-DESSOUS POUR TESTER ON ENVOIE UNE CHAINE CONVENUE:
     if False:
         ans = "101 %d 102 %d 104 %d 107 %d 110 %d 114 %d 127 %d 150 %d 151 %d 160 %d 161 %d 178 %d 179 %d 187 %d 188 %d 189 %d "%(
-            0, # 0 Ox65 101            Arret d'urgence 32639  led
+            0,      # 0 Ox65 101            Arret d'urgence 32639  led
             0x7F7F, # 1 Ox66 102            Defaut critique   768  led
             1020,   # 2 Ox68 104               Mesure debit     0  self.output
             1070,   # 3 Ox6b 107           Mesure puissance     0  output
@@ -81,8 +81,8 @@ def myFunction(e : webui.event):
             121,    #10 Oxa1 161                 Debit haut    62  input
             789,    #11 Oxb2 178         Consigne puissance   900  input
             45,     #12 Oxb3 179             Consigne debit    40  input
-            888,    #13 Oxbb 187                 Generateur     0  button
-            9,      #14 Oxbc 188                        Gaz     0  button
+            0,    #13 Oxbb 187                 Generateur     0  button
+            0x7F7F,      #14 Oxbc 188                        Gaz     0  button
             4)      #15 Oxbd 189                     Plasma     0  button
 
     # print("python says : I will return "+ans[:-1])
