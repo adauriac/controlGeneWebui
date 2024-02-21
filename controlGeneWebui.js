@@ -17,13 +17,25 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 });
 */
+/*
+  At all watchog function called, frequency set by setInterval()
+  the 6+3 values possibly changed by the gui :
+  3 for power : low high target
+  3 for flow : low high target
+  3 boutons : generator, gaz, plasma
+  are tested to be consistent a string is constructed with the consistent ones and is
+  sent to the backend in python. If no error 9*2 values are sent.
+
+  In return from the python backend the values of all registers in received.
+  The gui is refreshed accordingly
+*/
 const elements = [];
 const elementsNew = [];
 let parametresToSend = "";
 let newValues = 0;
 
 function refresh () { // called when the button is clicked
-    newValues = 1; /* to tell myFunctionJS to send the new values */
+    newValues = 1; /* to tell watchdogFunctionJS to send the new values */
 }
 
 function isStringAnInteger(str) {
@@ -91,18 +103,22 @@ document.addEventListener("DOMContentLoaded", () => {
     eltTemoin.style.top = 310+"px";
     eltTemoin.style.left = 550+"px";
     
-    function treatAnswer() {
+    function treatAnswer(answer) {
     }     // FIN     function treatAnswer() {
     // *************************************************************************
 
     function prepareParam(){
+	// For the 6 values corresponding to flow and power, check if low <= consigne <= high
+	// if ok return a string setting value format "registerAdd registerValue ..."
+	// else return an empty string
+	// if there is an incompatibility ALL NEW VALUES ARE DISREGARDED not only the wrong ones
 	param = "";
 	for(let i=0;i<elements.length;i++) {
 	    if (elements[i]==elementsNew[i])
 		continue;
 	    // from here the element is GUI modifiable
 	    val = elementsNew[i].value;
-	    if (val == "") {
+	    if (val == "") { // the filed on the gui is empty
 		val = elements[i].innerHTML;
 	    }
 	    if (!isStringAnInteger(val)) {
@@ -131,15 +147,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	// verification des bornes
 	let wrong=0;
 	if (PLB>PLH) {
-	    wrong=1;
+	    wrong += 1;
 	    alert("Limits of power not compatible");
 	}
 	if (DLB>DLH) {
-	    wrong+=10;
+	    wrong += 10;
 	    alert("Limits of flow not compatible");
 	}
 	if ((PC<PLB) || (PC>PLH)) {
-	    wrong = 100;
+	    wrong += 100;
 	    alert("Power target out of bonds");
 	}
 	if ((DC<DLB) || (DC>DLH)) {
@@ -158,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }    // FIN    function prepareParam(){
     // ******************************************************************
     
-    function myFunctionJS(e) {
+    function watchdogFunctionJS(e) {
 	/* blink !*/
 	if (eltTemoin.style.visibility == "visible") 
 	    eltTemoin.style.visibility = "hidden"
@@ -173,7 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	// console.log("MyFunctionJS says: param for webui.call=",param)
 	webui.call('myFunction',param).then((response)=> {
 	    /*  PROCCESSING THE RETURN OF THE PYTHON FUNCTION */
-	    // console.log("myFunctionJS L 124 I receveid ",response)
+	    // console.log("watchdogFunctionJS L 124 I receveid ",response)
+	    alert("response "+response)
 	    responseSplitted = response.split(" ");
 	    for (let i=0;i<responseSplitted.length;i+=2) {
 		let add = Number(responseSplitted[i]);
@@ -181,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (!lesIndex.has(add))
 		    alert("oops JS recevied "+add+" an unknown register address")
 		let k = lesIndex.get(add);
-		// console.log("myFunctionJS L 133 add=",add," val=",val," k=",k)
+		// console.log("watchdogFunctionJS L 133 add=",add," val=",val," k=",k)
 		if (elements[k].classList.contains("labelOutput")){
 		    elements[k].innerHTML = val;
 		}
@@ -192,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			 (elements[k].classList.contains("led"))){
 		    elements[k].classList.remove("on")
 		    elements[k].classList.remove("off")
-		    //  la couleur grise de defaut
+		    //  la couleur grise de defaut 
 		    if (val==0) {
 			elements[k].classList.add("off");
 		    }
@@ -204,11 +221,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		    alert("Internal impossible error");
 	    }
 	});
-    }
+    } // FIN     function watchdogFunctionJS(e) 
 
     /* pll.addEventListener("change", my_function);*/
     // pll.addEventListener("click", my_function);
     newValues = 0;
-    //setTimeout(myFunctionJS,500);
-    setInterval(myFunctionJS,500);
+    //setTimeout(watchdogFunctionJS,500); // un seul appel
+    setInterval(watchdogFunctionJS,500*2); // appel recurent
 });

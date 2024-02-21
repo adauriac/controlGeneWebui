@@ -31,6 +31,11 @@ The way the widget are shown is decide in the frontend controlGeneWebui. This wo
 using some convention not yet defined like led.on led.off led.invisible etc
 
 When val is written in the register 0x66 (102) val+(0,256,512,768) is re-read ?
+
+1) Le bouton generateur sert a mettre en chauffage DOIT ETRE FAIT EN PREMIER
+2) Le bouton Gaz declenche le debit d'amorce NE PEUT ETRE FAIT QU'APRES 1)
+3) Le bouton plasma debutte le process et NE PEUT ETRE FAIT QU'APRES 2)
+
 """
 
 def getError(e : webui.event):

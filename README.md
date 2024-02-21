@@ -37,3 +37,8 @@ Geoffroy conseille electronjs.org qui serait une solution 100% javascript.
 Javascript a une librairie modbus. Electron encapsule le frontend et le
 backend tous deux en js, et qui communique par IPC. Le "déploiement" est
 bien prévu.
+
+
+1) Le bouton generateur sert a mettre en chauffage DOIT ETRE FAIT EN PREMIER
+2) Le bouton Gaz declenche le debit d'amorce NE PEUT ETRE FAIT QU'APRES 1)
+3) Le bouton plasma debutte le process et NE PEUT ETRE FAIT QU'APRES 2)
