@@ -29,22 +29,66 @@ document.addEventListener('DOMContentLoaded', function() {
   In return from the python backend the values of all registers in received.
   The gui is refreshed accordingly
 */
+
+/*
+  example of led or ledbutton manipulation:
+  elt.classList.remove("on")
+  elt.classList.remove("off")
+  if (val==0)
+     elt.classList.add("on")
+  else if (val==0x7F7F)
+     elt.classList.add("off")
+*/
 const elements = [];
 const elementsNew = [];
 let parametresToSend = "";
 let newValues = 0;
+let stateGene = 0; // bit 0 = etat, bit 1 = il y a eu un chgt non reporte a la carte
+let stateGaz = 0;
+let statePlasma = 0;
+
+function toggle(k) {
+    // bit 0 is toggle and bit 1 set to 1 (indicating a change)
+    if ((k==0) || (k==2))  // 00 or 10 -> 11
+	return 3;
+    else if ((k==1) || (k==3))   // 11 or 01 -> 10
+	return 2;
+    return k;
+}     // FIN function toggle(k)
+// *************************************************************************************
 
 function cliqued(qui) {// called when one of the 3 buttons gaz/gene/plasma is clicked
-    alert(qui);
-}
+    if (qui=="gene") {
+	stateGene = toggle(stateGene);
+	newValues = 1;
+	console.log("ds cliqued stateGene becomes "+stateGene)
+    }
+    else if (qui=="gaz") {
+/*	if (stateGene==1)*/ {
+	    stateGaz = toggle(stateGaz);
+	    newValues = 1;
+	    console.log("ds cliqued stateGaz becomes "+stateGaz)
+	}
+    }
+    else if (qui=="plasma") {
+/*	if ((stateGene==1) && (stateGaz==1))*/ {
+	    statePlasma = toggle(statePlasma);
+	    newValues = 1;
+	    console.log("ds cliqued statePlasma becomes "+statePlasma)
+	}
+    }
+}     // FIN function cliqued(qui)
+// *************************************************************************************
 
-function refresh () { // called when the button "submit" is clicked
+function refresh() { // called when the button "submit" is clicked
     newValues = 1; /* to tell watchdogFunctionJS to send the new values */
-}
+}    // FIN function refresh
+// *************************************************************************************
 
 function isStringAnInteger(str) {
   return !isNaN(str) && Number.isInteger(parseFloat(str));
-}
+}    // FIN function isStringAnInteger(str) 
+// *************************************************************************************
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("hi 2");
@@ -106,11 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
     eltGo.style.top = 105+"px";
     eltTemoin.style.top = 310+"px";
     eltTemoin.style.left = 550+"px";
-    
+
     function treatAnswer(response) {
 	//  PROCCESSING THE RETURN OF THE PYTHON FUNCTION
 	//  SHOW THE RECEVEID VALUES
-	console.log("reponse du backend new",response);
+	if (0)
+	    console.log("reponse du backend new",response);
 	responseSplitted = response.split(" ");
 	for (let i=0;i<responseSplitted.length;i+=2) {
 	    let add = Number(responseSplitted[i]);
@@ -195,7 +240,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		    elt.classList.add("on")
 		else if (val==0x7F7F)
 		    elt.classList.add("off")
-		console.log(k);		
 	    }
 	    else { /* an unknown register */
 		console.log(k);		
@@ -238,6 +282,32 @@ document.addEventListener("DOMContentLoaded", () => {
 	// else return an empty string
 	// if there is an incompatibility ALL NEW VALUES ARE DISREGARDED not only the wrong ones
 	param = "";
+	// Treat the 3 boutonLed in the order 1:gene 2: gaz 3: plasma
+	if (stateGene==2) {
+	    param += " 187 0";
+	    stateGene = 0;
+//	    alert("ds preperparam  2 devient "+stateGene)
+	}
+	if (stateGene==3) {
+	    param += " 187 1";
+	    stateGene = 1;
+	}
+	if (stateGaz==2) {
+	    param += " 188 0";
+	    stateGaz = 0;
+	}
+	if (stateGaz==3) {
+	    param += " 188 1";
+	    stateGaz = 1;
+	}
+	if (statePlasma==2) {
+	    param += " 189 0";
+	    statePlasma = 0;
+	}
+	if (statePlasma==3) {
+	    param += " 189 1";
+	    statePlasma = 1;
+	}
 	for(let i=0;i<elements.length;i++) {
 	    if (elements[i]==elementsNew[i])
 		continue;
@@ -318,6 +388,9 @@ document.addEventListener("DOMContentLoaded", () => {
     /* pll.addEventListener("change", my_function);*/
     // pll.addEventListener("click", my_function);
     newValues = 0;
+    stateGene = 2;  //it means it is a newvalue aand this new value is 0
+    stateGaz = 2;
+    statePlasma = 2;
     //setTimeout(watchdogFunctionJS,500); // un seul appel
-    setInterval(watchdogFunctionJS,500*2*5); // appel recurent
+    setInterval(watchdogFunctionJS,5000); // appel recurent
 });

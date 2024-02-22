@@ -49,9 +49,10 @@ def myFunction(e : webui.event):
        sous la forme 'add val add val ... add val'
     2) retourne ai JS toutes les valeurs des registres
     """
-    global myGene
+    global myGene,cpt
+    cpt += 1
     param = e.window.get_str(e, 0)
-    print(f"python says :entering myFunction with |{param}|")
+    print(f"python says :entering myFunction for the {cpt} times with |{param}|")
     if not myGene.connected:
         return "error"
     #           WRITE THE REGISTERS AS ASKED BY THE JS THRU THE PARAM
@@ -107,6 +108,6 @@ if connected != True:
 MyWindow = webui.window()
 MyWindow.show("controlGeneWebui.html",webui.browser.firefox)
 MyWindow.bind("myFunction", myFunction) 
-
+cpt = 0 # just to count the calls 
 webui.wait()
 # wrssdnuw_di
